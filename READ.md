@@ -6,3 +6,9 @@
 - Listen to port 7777
 - Write request handlers for /test, /hello
 - Install nodemon and updates scripts inside package
+
+--------
+- git init
+- .gitignore add node_modules inside it
+- Create a remote repository on github
+- Push all code to remote origin
