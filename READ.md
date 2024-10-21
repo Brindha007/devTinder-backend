@@ -1,0 +1,8 @@
+- Create a repository (devTinder-backend)
+- Initialize the repository (npm init)
+- node_modules, package.json, package-lock.json
+- Install express (npm i express)
+- Create a server
+- Listen to port 7777
+- Write request handlers for /test, /hello
+- Install nodemon and updates scripts inside package
