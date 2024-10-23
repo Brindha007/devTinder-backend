@@ -7,7 +7,7 @@ app.get("/admin/getAllData", (req, res) => {
     throw new Error("Errorrrrrrrrrrr");
     res.send("Get all the data");
   } catch (err) {
-    res.status(500).send("Error occured catchblock.");
+    res.status(500).send("Error occured.");
   }
 });
 
