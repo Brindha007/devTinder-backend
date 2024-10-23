@@ -12,3 +12,16 @@
 - .gitignore add node_modules inside it
 - Create a remote repository on github
 - Push all code to remote origin
+- Play with routes and route extensions, / , hello/2, /xyz
+- Order of the routes most important
+- Instll Postman app and create workspace/ collection > test API calls
+- Wrtie logic to handle GET, POST, PATCH, DELETE API calls and test
+- Explore routing and use of ?, + , (), * in the routes
+- Use of regex in routes /a/ , /.*fly$/
+- Reading the query params in the routes
+- Reading the dynamic routes
+
+ # Ep-05 Middlewares and Error handlers
+ - Multiple Route handlers - Play with the code
+ - next()
+ - next function and errors along 
