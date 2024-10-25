@@ -46,3 +46,8 @@
  - JS object vs JSON (Difference).
  - Add the express.json middleware to your app
  - Make your signup API dynamic to receive data from the end user.
+ - Make GET API call to find by emailId and fetch user details.
+ - Make GET Feed API call to fetch all use details.
+ - Create a API to delete user
+ - Create Update user API
+ - Explore Mongoose documentation
