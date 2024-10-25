@@ -3,16 +3,16 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./Models/user");
 
+//Using Middleware JSON function  for all HTTP methods
+
+app.use(express.json());
+
 app.post("/signup", async (req, res) => {
-    const newUser = {
-      firstName : "Surya",
-      lastName : "S",
-      age: 48,
-      emailId : "suryasiva23@gmail.com"
-    };
+    console.log(req.body);
+
     //Creating new Instance of User model.
     try{
-      const user = new User(newUser);
+      const user = new User(req.body);
       await user.save();
       res.send("User added successfully.")
     }catch(err){
