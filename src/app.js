@@ -46,10 +46,27 @@ app.get("/userId", async (req, res) => {
 
 //POST Api call to Signup
 app.post("/signup", async (req, res) => {
-  console.log(req.body);
+  const data= req.body;
 
   //Creating new Instance of User model.
   try {
+    const ALLOWED_UPDATES = [
+      "firstName",
+      "lastName",
+      "emailId",
+      "password",
+      "photoUrl",
+      "gender",
+      "age",
+      "skills",
+      "about",
+    ];
+    const isAllowedUpdates = Object.keys(data).every((k) => {
+      return ALLOWED_UPDATES.includes(k);
+    });
+    if (!isAllowedUpdates) {
+      throw new Error("Invalid data entries are not allowed.");
+    }
     const user = new User(req.body);
     await user.save();
     res.send("User added successfully.");
@@ -70,31 +87,59 @@ app.delete("/user", async (req, res) => {
 });
 
 //Update data by _id using PATCH method
-// app.patch("/user", async (req, res) => {
-//   try {
-//     const data = req.body;
-//     const userId = req.body._id;
-//     const user = await User.findByIdAndUpdate (userId,data);
-//     res.send("Updated profile data.");
-//   } catch (error) {
-//     res.send("Error.");
-//   }
-
-// });
-
-//Update data by email id
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
+  const data = req.body;
+  const userId = req.params?.userId;
   try {
-    const userEmail = req.body.emailId;
-    const data = req.body;
-    const user = await User.findOneAndUpdate({ emailId: userEmail }, data,{
-      runValidators:true
+    const ALLOWED_UPDATES = [
+      "photoUrl",
+      "gender",
+      "age",
+      "skills",
+      "about",
+    ];
+    const isAllowedUpdates = Object.keys(data).every((k) => {
+      return ALLOWED_UPDATES.includes(k);
     });
-    res.send("Upated data by emailId");
+    if (!isAllowedUpdates) {
+      throw new Error("Updates not allowed.");
+    }
+    const user = await User.findByIdAndUpdate(userId, data,{returnDocument:"after"});
+    if (!user) {
+      return res.status(404).send("User not found.");
+    }
+    if(data?.skills?.length > 10){
+      throw new Error ("Skills cannot be more than 10")
+    }
+    res.send("Updated profile data.");
+    console.log("Data received:", data);
+    console.log("User ID:", userId);
+
   } catch (error) {
-    res.status(400).send("error" + error.message);
+    res.send("Update failed." + error.message);
   }
 });
+
+//Update data by email id
+// app.patch("/user", async (req, res) => {
+//   try {
+//     const userEmail = req.body.emailId;
+//     const data = req.body;
+//     const ALLOWED_UPDATES =["photoUrl","gender","age","skills","about"];
+//     const isAllowedUpdates = Object.keys(data).every((k)=>{
+//       ALLOWED_UPDATES.includes(k);
+//     });
+//     if(!isAllowedUpdates){
+//       throw new Error("Updates not allowed.")
+//     }
+//     const user = await User.findOneAndUpdate({ emailId: userEmail }, data, {
+//       runValidators: true,
+//     });
+//     res.send("Upated data by emailId");
+//   } catch (error) {
+//     res.status(400).send("error " + error.message);
+//   }
+// });
 
 connectDB()
   .then(() => {
