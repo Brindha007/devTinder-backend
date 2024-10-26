@@ -2,7 +2,8 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./Models/user");
-
+const { validateSignUpData } = require("./utils/Validation");
+const bcrypt = require("bcrypt");
 //Using Middleware JSON function  for all HTTP methods
 
 app.use(express.json());
@@ -44,34 +45,47 @@ app.get("/userId", async (req, res) => {
   }
 });
 
-//POST Api call to Signup
+//POST Api call for Signup
 app.post("/signup", async (req, res) => {
-  const data= req.body;
-
-  //Creating new Instance of User model.
   try {
-    const ALLOWED_UPDATES = [
-      "firstName",
-      "lastName",
-      "emailId",
-      "password",
-      "photoUrl",
-      "gender",
-      "age",
-      "skills",
-      "about",
-    ];
-    const isAllowedUpdates = Object.keys(data).every((k) => {
-      return ALLOWED_UPDATES.includes(k);
+    //Validate Signup data
+    validateSignUpData(req);
+    const { firstName, lastName, emailId, password } = req.body;
+    //Encrypt Password
+    const passwordHash = await bcrypt.hash(password, 10);
+    //Creating new Instance of User model.
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
     });
-    if (!isAllowedUpdates) {
-      throw new Error("Invalid data entries are not allowed.");
-    }
-    const user = new User(req.body);
     await user.save();
     res.send("User added successfully.");
   } catch (err) {
     res.status(400).send("Error saving the user:" + err.message);
+  }
+});
+
+//POST API call for login
+app.post("/login", async(req, res) => {
+  try {
+    const {emailId, password} = req.body;
+   // Check if the user exists in the DB
+  const user = await User.findOne({emailId: emailId});
+  console.log(user);
+  if(!user){
+    throw new Error ("Invalid credentials");
+  }
+   // Compare provided password with stored hashed password
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if(isValidPassword){
+    res.send("Login successfully!!!");
+  }else {
+    throw new Error ("Invalid credentials");
+  }
+  } catch (error) {
+    res.send("ERROR: "+ error.message);
   }
 });
 
@@ -91,30 +105,25 @@ app.patch("/user/:userId", async (req, res) => {
   const data = req.body;
   const userId = req.params?.userId;
   try {
-    const ALLOWED_UPDATES = [
-      "photoUrl",
-      "gender",
-      "age",
-      "skills",
-      "about",
-    ];
+    const ALLOWED_UPDATES = ["photoUrl", "gender", "age", "skills", "about"];
     const isAllowedUpdates = Object.keys(data).every((k) => {
       return ALLOWED_UPDATES.includes(k);
     });
     if (!isAllowedUpdates) {
       throw new Error("Updates not allowed.");
     }
-    const user = await User.findByIdAndUpdate(userId, data,{returnDocument:"after"});
+    const user = await User.findByIdAndUpdate(userId, data, {
+      returnDocument: "after",
+    });
     if (!user) {
       return res.status(404).send("User not found.");
     }
-    if(data?.skills?.length > 10){
-      throw new Error ("Skills cannot be more than 10")
+    if (data?.skills?.length > 10) {
+      throw new Error("Skills cannot be more than 10");
     }
     res.send("Updated profile data.");
     console.log("Data received:", data);
     console.log("User ID:", userId);
-
   } catch (error) {
     res.send("Update failed." + error.message);
   }

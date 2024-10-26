@@ -66,3 +66,8 @@
  # External library for validation
  - Install validator (npm i validator)
  - Explore validator library funciton and use validator function for password,email and photoUrl.
+
+ # Encrypt password
+ - Validate data in signup API
+ - Install bcrypt package
+ - Create PasswordHash using bcrypt.hash & save the user & encrypted password.
