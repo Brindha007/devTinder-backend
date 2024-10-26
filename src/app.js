@@ -44,6 +44,7 @@ app.get("/userId", async (req, res) => {
   }
 });
 
+//POST Api call to Signup
 app.post("/signup", async (req, res) => {
   console.log(req.body);
 
@@ -82,16 +83,17 @@ app.delete("/user", async (req, res) => {
 // });
 
 //Update data by email id
-app.patch("/user",async(req,res) => {
+app.patch("/user", async (req, res) => {
   try {
-    const userEmail =req.body.emailId;
+    const userEmail = req.body.emailId;
     const data = req.body;
-    const user = await User.findOneAndUpdate({emailId : userEmail},data);
+    const user = await User.findOneAndUpdate({ emailId: userEmail }, data,{
+      runValidators:true
+    });
     res.send("Upated data by emailId");
   } catch (error) {
-    res.status(400).send("error");
+    res.status(400).send("error" + error.message);
   }
-
 });
 
 connectDB()

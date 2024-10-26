@@ -51,3 +51,11 @@
  - Create a API to delete user
  - Create Update user API
  - Explore Mongoose documentation
+
+ # Schema Validaiton
+ - Explore schematype options from the documentation
+ - add required, unique, lowercase, min(Number), minLength(String), trim
+ - Add default
+ - Create a custom validate function for gender
+ - Improve the DB schema - PUT all appropriate validaitons on each field in Schema.
+ - Add Timestamps to userSchema
