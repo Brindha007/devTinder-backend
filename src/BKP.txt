@@ -1,0 +1,191 @@
+const express = require("express");
+const connectDB = require("./config/database");
+const app = express();
+const User = require("./Models/user");
+const { validateSignUpData } = require("./utils/Validation");
+const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const userAuth = require("./middleware/auth");
+
+// Middleware to parse JSON data in requests
+app.use(express.json());
+
+// Middleware to parse cookies in requests
+app.use(cookieParser());
+
+//GET User by emailId
+app.get("/user", async (req, res) => {
+  try {
+    const userEmail = req.body.emailId;
+    // Fetch user details by email ID from the database
+    const user_detail = await User.find({ emailId: userEmail });
+    //console.log(user_deatail);
+    if (user_detail.length === 0) {
+      res.send("User not found.");
+    } else {
+      res.send("Found out user. " + user_detail);
+    }
+  } catch (error) {
+    res.status(400).send("Error 400.");
+  }
+});
+
+// GET all users (feed)
+app.get("/feed", async (req, res) => {
+  try {
+    // Fetch all users from the database
+    const allUsers = await User.find({});
+    res.send("Got all the user details." + allUsers);
+  } catch (error) {
+    res.send("Error");
+  }
+});
+
+//GET user by userId
+app.get("/userId", async (req, res) => {
+  try {
+    const userId = req.body._id;
+     // Find user by unique ID
+    const findById = await User.findById({ _id: userId });
+    res.send("Found it by userId " + findById);
+  } catch (error) {
+    res.send("Error 400.");
+  }
+});
+
+//POST Api call for Signup
+app.post("/signup", async (req, res) => {
+  try {
+    //Validate Signup data
+    validateSignUpData(req);
+    const { firstName, lastName, emailId, password } = req.body;
+    //Encrypt Password
+    const passwordHash = await bcrypt.hash(password, 10);
+    //Creating new Instance of User model.
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
+    await user.save();
+    res.send("User added successfully.");
+  } catch (err) {
+    res.status(400).send("Error saving the user:" + err.message);
+  }
+});
+
+//POST API call for login
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    // Check if the user exists in the DB
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+    // Compare provided password with stored hashed password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (isValidPassword) {
+    // Generate a JWT token upon successful login
+      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$777");
+
+      // Set token in cookie and send response back to the user
+      res.cookie("token", token);
+      res.send("Login successfully!!!");
+    } else {
+      throw new Error("Invalid credentials");
+    }
+  } catch (error) {
+    res.send("ERROR: " + error.message);
+  }
+});
+
+// GET profile details by verifying JWT token
+app.get("/profile",userAuth, async (req, res) => {
+  try {
+    const user= req.user;
+    res.send(user);
+  } catch (error) {
+    res.send("ERROR: " + error.message);
+  }
+});
+
+//DELETE by userId from the database
+app.delete("/user", async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    // Delete user from the database by ID
+    const user = await User.findByIdAndDelete(userId);
+    res.send("Deleted successfully.");
+  } catch (error) {
+    res.send("Error in deletion.");
+  }
+});
+
+// PATCH (update) user data by user ID
+app.patch("/user/:userId", async (req, res) => {
+  const data = req.body;
+  const userId = req.params?.userId;
+  try {
+    // Define allowed fields for updates
+    const ALLOWED_UPDATES = ["photoUrl", "gender", "age", "skills", "about"];
+    const isAllowedUpdates = Object.keys(data).every((k) => {
+      return ALLOWED_UPDATES.includes(k);
+    });
+    // Validate allowed updates
+    if (!isAllowedUpdates) {
+      throw new Error("Updates not allowed.");
+    }
+     // Update user data in the database
+    const user = await User.findByIdAndUpdate(userId, data, {
+      returnDocument: "after",
+    });
+    if (!user) {
+      return res.status(404).send("User not found.");
+    }
+    // Ensure skills array has no more than 10 entries
+    if (data?.skills?.length > 10) {
+      throw new Error("Skills cannot be more than 10");
+    }
+    res.send("Updated profile data.");
+    console.log("Data received:", data);
+    console.log("User ID:", userId);
+  } catch (error) {
+    res.send("Update failed." + error.message);
+  }
+});
+
+//PATCH (update) user data by email ID instead of user ID
+// app.patch("/user", async (req, res) => {
+//   try {
+//     const userEmail = req.body.emailId;
+//     const data = req.body;
+//     const ALLOWED_UPDATES =["photoUrl","gender","age","skills","about"];
+//     const isAllowedUpdates = Object.keys(data).every((k)=>{
+//       ALLOWED_UPDATES.includes(k);
+//     });
+//     if(!isAllowedUpdates){
+//       throw new Error("Updates not allowed.")
+//     }
+//     const user = await User.findOneAndUpdate({ emailId: userEmail }, data, {
+//       runValidators: true,
+//     });
+//     res.send("Upated data by emailId");
+//   } catch (error) {
+//     res.status(400).send("error " + error.message);
+//   }
+// });
+
+// Connect to database and start the server
+connectDB()
+  .then(() => {
+    console.log("Databased connected successfully.");
+    app.listen(3000, () => {
+      console.log("Server run successfully.");
+    });
+  })
+  .catch((err) => {
+    console.log("Error in connection.", err);
+  });
