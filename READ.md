@@ -87,3 +87,9 @@
  - Set the expiry of JWT token and cookies to 7 days.
  - Create userSchema method to getJWT()
  - Create UserSchema method to comparepassword(passwordInputByUser)
+
+ # Express Router
+ - Read documentation for express.Router
+ - Create routes folder for managing routes
+ - Create authRouter, profileRouter, requestRouter
+ - Import all these routers in app.js
