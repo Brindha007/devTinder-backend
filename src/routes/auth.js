@@ -6,7 +6,7 @@ const User = require("../Models/user");
 
 const authRouter = express.Router();
 
-//POST Api call for Signup
+//POST API call for Signup
 authRouter.post("/signup", async (req, res) => {
     try {
       //Validate Signup data
@@ -28,8 +28,8 @@ authRouter.post("/signup", async (req, res) => {
     }
   });
   
-  //POST API call for login
-  authRouter.post("/login", async (req, res) => {
+//POST API call for Login
+authRouter.post("/login", async (req, res) => {
     try {
       const { emailId, password } = req.body;
       // Check if the user exists in the DB
@@ -53,7 +53,13 @@ authRouter.post("/signup", async (req, res) => {
     } catch (error) {
       res.send("ERROR: " + error.message);
     }
-  });
+});
 
-  module.exports = authRouter;
+//POAT API call for Logout
+authRouter.post("/logout",async (req, res) => {
+    res.cookie("token",null, {expires :new Date(Date.now())});
+    res.send("Logout successfully!!!");
+});
+
+module.exports = authRouter;
   
