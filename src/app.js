@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestsRouter = require("./routes/requests");
+const userRouter = require("./routes/user");
 
 // Middleware to parse JSON data in requests
 app.use(express.json());
@@ -20,6 +21,7 @@ app.use(cookieParser());
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestsRouter);
+app.use("/", userRouter);
 
 // Connect to database and start the server
 connectDB()
