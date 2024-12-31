@@ -14,8 +14,8 @@ const requestsRouter = require("./routes/requests");
 const userRouter = require("./routes/user");
 
 const corsOptions = {
-  origin: "http://localhost:5173",
-  credentials: true,
+  origin: "http://localhost:5173", // Allows requests from this frontend URL
+  credentials: true,              // Allows cookies or authorization headers (withCredentials)
 };
 
 app.use(cors(corsOptions));
